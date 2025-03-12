@@ -1,0 +1,140 @@
+.formLogoIcon {
+  width: auto;
+  position: relative;
+  height: var(--pixel-20);
+}
+
+.circleBody,
+.circleBodySm {
+  position: relative;
+  border-radius: 50%;
+}
+
+.circleBody {
+  width: var(--pixel-20);
+  background-color: var(--color-primary);
+  height: var(--pixel-20);
+  animation: bounce 0.3s alternate infinite ease;
+}
+
+.circleBodySm {
+  width: var(--pixel-5);
+  height: var(--pixel-5);
+  animation: smallbounce 0.3s alternate infinite ease;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(var(--pixel-min-10));
+  }
+  100% {
+    transform: translateY(var(--pixel-min-20));
+  }
+}
+
+@keyframes smallbounce {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(var(--pixel-min-2));
+  }
+  100% {
+    transform: translateY(var(--pixel-min-5));
+  }
+}
+
+.circleBody:nth-child(2),
+.circleBodySm:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.circleBody:nth-child(3),
+.circleBodySm:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingCircleBody {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pixel-10) var(--pixel-10) 0;
+  gap: var(--pixel-10);
+}
+
+.circleShadow {
+  position: relative;
+  border-radius: 50%;
+  width: var(--pixel-20);
+  background-color: var(--color-primary-30);
+  height: var(--pixel-5);
+  animation: shadows 0.3s alternate infinite ease;
+}
+
+@keyframes shadows {
+  0% {
+    transform: scaleX(1);
+  }
+  40% {
+    transform: scaleX(0.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scaleX(0.2);
+    opacity: 0.4;
+  }
+}
+
+.circleShadow:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.circleShadow:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loadingCircle,
+.loadingCircleShadow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingCircleShadow {
+  margin-top: var(--pixel-min-2);
+  flex-direction: row;
+  padding: 0 var(--pixel-10) var(--pixel-10);
+  gap: var(--pixel-10);
+}
+
+.loadingCircle {
+  flex-direction: column;
+}
+
+.loadingScreen,
+.loadingWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingWrapper {
+  gap: var(--pixel-10);
+  z-index: 0;
+  color: var(--color-hint);
+}
+
+.loadingScreen {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: var(--color-foreground);
+  height: 100%;
+  z-index: 9999;
+}
