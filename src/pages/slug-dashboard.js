@@ -671,8 +671,15 @@ const DashboardSlugPage = ({ parent, slug }) => {
         case "DENTISTREPORT":
           addtFormData.append("data", JSON.stringify({ secret, limit, hal: offset }));
           data = await apiRead(addtFormData, "dentist", "orderdentist");
-          setDentistReportData(data && data.data && data.data.length > 0 ? data.data : []);
-          setTotalPages(data && data.data && data.data.length > 0 ? data.TTLPage : 0);
+          if (data && data.data && data.data.length > 0) {
+            addtdata = data.data;
+            const mergeddata = addtdata.flatMap(({ lab, detailorder }) => detailorder.map((order, index) => ({ ...order, ...(index === 0 ? lab : Object.fromEntries(Object.keys(lab).map((key) => [key, ""]))) })));
+            setDentistReportData(mergeddata);
+            setTotalPages(data.TTLPage);
+          } else {
+            setDentistReportData([]);
+            setTotalPages(0);
+          }
           break;
         default:
           setTotalPages(0);
@@ -1097,7 +1104,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
   const { searchTerm: locationSearch, handleSearch: handleLocationSearch, filteredData: filteredLocationData, isDataShown: isLocationShown } = useSearch(locationData, ["cityname"]);
   const { searchTerm: patientSearch, handleSearch: handlePatientSearch, filteredData: filteredPatientData, isDataShown: isPatientShown } = useSearch(patientData, ["transaction.dentist"]);
   const { searchTerm: credSearch, handleSearch: handleCredSearch, filteredData: filteredCredData, isDataShown: isCredShown } = useSearch(credData, ["outlet_name", "clientid", "secretid"]);
-  const { searchTerm: dReportSearch, handleSearch: handleDReportSearch, filteredData: filteredDReportData, isDataShown: isDReportShown } = useSearch(dentistReportData, ["lab.labname"]);
+  const { searchTerm: dReportSearch, handleSearch: handleDReportSearch, filteredData: filteredDReportData, isDataShown: isDReportShown } = useSearch(dentistReportData, ["service"]);
 
   const renderContent = () => {
     switch (slug) {
@@ -3512,70 +3519,70 @@ const DashboardSlugPage = ({ parent, slug }) => {
               </DashboardTool>
             </DashboardToolbar>
             <DashboardBody>
-              <Table byNumber isExpandable page={currentPage} limit={limit} isNoData={!isDReportShown} isLoading={isFetching}>
+              <Table byNumber page={currentPage} limit={limit} isNoData={!isDReportShown} isLoading={isFetching}>
                 <THead>
                   <TR>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.transactioncreate", "date")}>
-                      Transaksi Dibuat
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "transactioncreate", "date")}>
+                      Tanggal Transaksi
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.idtransaction", "number")}>
-                      id
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "idtransaction", "number")}>
+                      ID Transaksi
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.totalpay", "number")}>
-                      Nominal
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "totalpay", "number")}>
+                      Nominal Transaksi
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.payment", "text")}>
-                      Payment Method
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "payment", "text")}>
+                      Metode Bayar
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.noinvoice", "number")}>
-                      Nomor Invoice
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "noinvoice", "number")}>
+                      No. Invoice
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "lab.labprice", "number")}>
-                      Lab Price
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "idbranch", "number")}>
+                      Kode Cabang
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "lab.labname", "text")}>
-                      Lab Name
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "labprice", "number")}>
+                      Harga Lab
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.transactionname", "text")}>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "labname", "text")}>
+                      Nama Lab
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "transactionname", "text")}>
                       Nama Pasien
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.dentist", "text")}>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "service", "text")}>
+                      Layanan
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "servicetype", "text")}>
+                      Jenis Layanan
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "dentist", "text")}>
                       Dentist
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.rscode", "number")}>
-                      RSCode
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "rscode", "number")}>
+                      Kode Reservasi
                     </TH>
-                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "detailorder.0.transactionphone", "number")}>
-                      Nomor Telepon
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "transactionstatus", "number")}>
+                      Status Transaksi
                     </TH>
                   </TR>
                 </THead>
                 <TBody>
                   {filteredDReportData.map((data, index) => (
-                    <TR
-                      key={index}
-                      expandContent={data.detailorder.map((subdata, idx) => (
-                        <Fieldset key={idx} type="row" markers={`${idx + 1}.`}>
-                          <Input id={`${pageid}-id-${index}-${idx}`} radius="full" label="ID" value={subdata.idtransactiondetail} readonly />
-                          <Input id={`${pageid}-datetimecreate-${index}-${idx}`} radius="full" label="Tanggal Dibuat" value={newDate(subdata.transactiondetailcreate, "id")} readonly />
-                          <Input id={`${pageid}-datetimeupdate-${index}-${idx}`} radius="full" label="Tanggal Diperbarui" value={newDate(subdata.transactiondetailupdate, "id")} readonly />
-                          <Input id={`${pageid}-service-${index}-${idx}`} radius="full" label="Layanan" value={subdata.service} readonly />
-                          <Input id={`${pageid}-service-type-${index}-${idx}`} radius="full" label="Jenis Layanan" value={subdata.servicetype} readonly />
-                          <Input id={`${pageid}-price-${index}-${idx}`} radius="full" label="Harga" value={newPrice(subdata.price)} readonly />
-                          <Input id={`${pageid}-status-${index}-${idx}`} radius="full" label="Status" value={orderAlias(subdata.transactiondetailstatus)} readonly />
-                        </Fieldset>
-                      ))}>
-                      <TD>{newDate(data.detailorder[0].transactioncreate, "id")}</TD>
-                      <TD type="code">{data.detailorder[0].idtransaction}</TD>
-                      <TD>{newPrice(data.detailorder[0].totalpay)}</TD>
-                      <TD>{data.detailorder[0].payment}</TD>
-                      <TD type="code">{data.detailorder[0].noinvoice}</TD>
-                      <TD>{data.lab.labprice}</TD>
-                      <TD>{data.lab.labname}</TD>
-                      <TD>{data.detailorder[0].transactionname}</TD>
-                      <TD>{data.detailorder[0].dentist}</TD>
-                      <TD type="code">{data.detailorder[0].rscode}</TD>
-                      <TD type="code">{data.detailorder[0].transactionphone}</TD>
+                    <TR key={index}>
+                      <TD>{newDate(data.transactioncreate, "id")}</TD>
+                      <TD type="number">{data.idtransaction}</TD>
+                      <TD>{newPrice(data.totalpay)}</TD>
+                      <TD>{data.payment}</TD>
+                      <TD type="code">{data.noinvoice}</TD>
+                      <TD type="number">{data.idbranch}</TD>
+                      <TD>{data.labprice === "" ? "" : newPrice(data.labprice)}</TD>
+                      <TD>{data.labname}</TD>
+                      <TD>{data.transactionname}</TD>
+                      <TD>{data.service}</TD>
+                      <TD>{data.servicetype}</TD>
+                      <TD>{data.dentist}</TD>
+                      <TD type="code">{data.rscode}</TD>
+                      <TD>{orderAlias(data.transactionstatus)}</TD>
                     </TR>
                   ))}
                 </TBody>

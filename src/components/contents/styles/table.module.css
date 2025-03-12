@@ -63,12 +63,9 @@
   font-family: inherit;
 }
 
-.regText.code {
-  font-family: "JetBrains Mono", monospace;
-}
-
+.regText.code,
 .regText.number {
-  font-family: "Roboto Mono", monospace;
+  font-family: "SF Mono", monospace;
 }
 
 .regText.code.copied,
