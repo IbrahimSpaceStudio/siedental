@@ -611,7 +611,7 @@ const DashboardParamsPage = ({ parent, slug }) => {
                   submittedData = { secret, type: inputData.diagnose, code: inputData.diagnosecode, detail: inputData.diagnosedetail, idmedics: medicRecordId, note: inputData.note };
                   break;
                 case "3":
-                  if (selectedMode === "update") submittedData = { secret, name: inputData.name, phone: inputData.phone, bank_code: inputData.bank_code, dentist: inputData.dentist, transactionstatus: inputData.status, layanan: inputData.order };
+                  if (selectedMode === "update") submittedData = { secret, name: inputData.name, phone: inputData.phone, bank_code: inputData.bank_code, dentist: inputData.dentist, note: inputData.note, transactionstatus: inputData.status, layanan: inputData.order };
                   else submittedData = { secret, idmedics: medicRecordId, idreservation: inputData.rscode };
                   break;
                 case "4":
@@ -1090,7 +1090,7 @@ const DashboardParamsPage = ({ parent, slug }) => {
                   return (
                     <Fragment>
                       {historyOrderData.length > 0 ? (
-                        <OnpageForm loading={isFetching} onSubmit={(e) => handleSubmit(e, "cudorder")}>
+                        <OnpageForm loading={isFetching} onSubmit={(e) => handleSubmit(e, "cudorder2")}>
                           <Fieldset>
                             <Input id={`${pageid}-name`} radius="full" label="Nama Pelanggan" placeholder="e.g. John Doe" type="text" name="name" value={inputData.name} onChange={handleInputChange} errormsg={errors.name} required disabled={historyOrderData[0].transactionstatus === "0" ? false : true} />
                             <Input id={`${pageid}-phone`} radius="full" label="Nomor Telepon" placeholder="0882xxx" type="tel" name="phone" value={inputData.phone} onChange={handleInputChange} errormsg={errors.phone} required disabled={historyOrderData[0].transactionstatus === "0" ? false : true} />
@@ -1129,7 +1129,10 @@ const DashboardParamsPage = ({ parent, slug }) => {
                                 <Input id={`${pageid}-type-price-${index}`} radius="full" label="Atur Harga" placeholder="Masukkan harga" type="number" name="price" value={subservice.price} onChange={(e) => handleRowChange("order", index, e)} errormsg={errors[`order.${index}.price`] ? errors[`order.${index}.price`] : ""} required readonly={inputData.order[index].service === "RESERVATION"} disabled={historyOrderData[0].transactionstatus === "0" ? false : true} />
                               </Fieldset>
                             ))}
-                          <Input id={`${pageid}-total-price`} radius="full" label="Total Harga" type="number" name="ttlprice" value={totalPrice} readonly />
+                          <Fieldset>
+                            <Textarea id={`${pageid}-note`} radius="full" rows={4} label="Catatan" placeholder="Tulis catatan" name="note" value={inputData.note} onChange={handleInputChange} errormsg={errors.note} />
+                            <Input id={`${pageid}-total-price`} radius="full" label="Total Harga" type="number" name="ttlprice" value={totalPrice} readonly />
+                          </Fieldset>
                           <FormFooter>
                             <Button id={`add-new-data-${pageid}`} type="submit" action={selectedMode} radius="full" buttonText={historyOrderData.length > 0 ? "Simpan Perubahan" : "Simpan Baru"} isLoading={isSubmitting} startContent={<Check />} loadingContent={<LoadingContent />} isDisabled={historyOrderData[0].transactionstatus === "0" ? false : true} />
                           </FormFooter>
