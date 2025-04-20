@@ -668,7 +668,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
             setTotalPages(0);
           }
           break;
-        case "DENTISTREPORT":
+        case "REPORTDETAIL":
           addtFormData.append("data", JSON.stringify({ secret, limit, hal: offset }));
           data = await apiRead(addtFormData, "dentist", "orderdentist");
           if (data && data.data && data.data.length > 0) {
@@ -3506,7 +3506,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
             {isPatientShown && <Pagination radius="full" nospacing currentPage={currentPage} ttlPages={totalPages} onChange={handlePageChange} />}
           </Fragment>
         );
-      case "DENTISTREPORT":
+      case "REPORTDETAIL":
         return (
           <Fragment>
             <DashboardHead title={pagetitle} desc="Data pengguna aplikasi. Klik Tambah Baru untuk membuat data pengguna baru, atau klik ikon di kolom Action untuk memperbarui data." />
