@@ -681,6 +681,19 @@ const DashboardSlugPage = ({ parent, slug }) => {
             setTotalPages(0);
           }
           break;
+        case "DENTISTREPORT":
+          addtFormData.append("data", JSON.stringify({ secret, limit, hal: offset }));
+          data = await apiRead(addtFormData, "dentist", "orderdentist");
+          if (data && data.data && data.data.length > 0) {
+            addtdata = data.data;
+            const mergeddata = addtdata.flatMap(({ lab, detailorder }) => detailorder.map((order, index) => ({ ...order, ...(index === 0 ? lab : Object.fromEntries(Object.keys(lab).map((key) => [key, ""]))) })));
+            setDentistReportData(mergeddata);
+            setTotalPages(data.TTLPage);
+          } else {
+            setDentistReportData([]);
+            setTotalPages(0);
+          }
+          break;
         default:
           setTotalPages(0);
           break;
@@ -3583,6 +3596,87 @@ const DashboardSlugPage = ({ parent, slug }) => {
                       <TD>{data.dentist}</TD>
                       <TD type="code">{data.rscode}</TD>
                       <TD>{orderAlias(data.transactionstatus)}</TD>
+                    </TR>
+                  ))}
+                </TBody>
+              </Table>
+            </DashboardBody>
+            {isDReportShown && <Pagination radius="full" nospacing currentPage={currentPage} ttlPages={totalPages} onChange={handlePageChange} />}
+          </Fragment>
+        );
+      case "DENTISTREPORT":
+        return (
+          <Fragment>
+            <DashboardHead title={pagetitle} desc="Data pengguna aplikasi. Klik Tambah Baru untuk membuat data pengguna baru, atau klik ikon di kolom Action untuk memperbarui data." />
+            <DashboardToolbar>
+              <DashboardTool>
+                <Input id={`search-data-${pageid}`} radius="full" labeled={false} placeholder="Cari data ..." type="text" value={dReportSearch} onChange={(e) => handleDReportSearch(e.target.value)} leadingicon={<Search />} />
+              </DashboardTool>
+              <DashboardTool>
+                <Select id={`limit-data-${pageid}`} labeled={false} noemptyval radius="full" placeholder="Baris per Halaman" value={limit} options={limitopt} onChange={handleLimitChange} readonly={!isDReportShown} />
+              </DashboardTool>
+            </DashboardToolbar>
+            <DashboardBody>
+              <Table byNumber page={currentPage} limit={limit} isNoData={!isDReportShown} isLoading={isFetching}>
+                <THead>
+                  <TR>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "transactioncreate", "date")}>
+                      Date
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "transactionname", "text")}>
+                      Nama Pasien
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "service", "text")}>
+                      Nama Treatment
+                    </TH>
+                    {/* <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "servicetype", "text")}>
+                      Jenis Layanan
+                    </TH> */}
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "remarks", "text")}>
+                      Remarks
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "totalpay", "number")}>
+                      Akumulasi Omset
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "rate", "number")}>
+                      Rate
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "rate", "number")}>
+                      Rate (if Any Lab/Bahan)
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "totalpay", "number")}>
+                      Biaya Perawatan
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "labprice", "number")}>
+                      Lab Cost
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "bahan", "text")}>
+                      Bahan
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "documentation", "number")}>
+                      Documentation
+                    </TH>
+                    <TH isSorted onSort={() => handleSort(dentistReportData, setDentistReportData, "fee", "number")}>
+                      Share Fee Doctor
+                    </TH>
+                  </TR>
+                </THead>
+                <TBody>
+                  {filteredDReportData.map((data, index) => (
+                    <TR key={index}>
+                      <TD>{newDate(data.transactioncreate, "id")}</TD>
+                      <TD>{data.transactionname}</TD>
+                      <TD>{data.service}</TD>
+                      {/* <TD>{data.servicetype}</TD> */}
+                      <TD></TD>
+                      <TD>{newPrice(data.totalpay)}</TD>
+                      <TD>0%</TD>
+                      <TD>0%</TD>
+                      <TD>{newPrice(data.totalpay)}</TD>
+                      <TD>{data.labprice === "" ? "-" : newPrice(data.labprice)}</TD>
+                      <TD>-</TD>
+                      <TD>-</TD>
+                      <TD>0</TD>
                     </TR>
                   ))}
                 </TBody>
