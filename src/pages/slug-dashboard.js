@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useContent, useFormat, useDevmode } from "@ibrahimstudio/react";
+import { useContent, useFormat, useDevmode, useWindow } from "@ibrahimstudio/react";
 import { Input } from "@ibrahimstudio/input";
 import { Select } from "@ibrahimstudio/select";
 import { Textarea } from "@ibrahimstudio/textarea";
@@ -27,12 +27,14 @@ import TabGroup from "../components/input-controls/tab-group";
 import { Search, Plus, Export, HChevron, Check, NewTrash, Filter } from "../components/contents/icons";
 import { LoadingContent } from "../components/feedbacks/screens";
 import Invoice from "../components/contents/invoice";
+import styles from "./styles/profile.module.css";
 
 const DashboardSlugPage = ({ parent, slug }) => {
   const navigate = useNavigate();
   const printRef = useRef();
   const { newDate, newPrice } = useFormat();
   const { log } = useDevmode();
+  const { width } = useWindow();
   const { toTitleCase, toPathname } = useContent();
   const { isLoggedin, secret, cctr, idoutlet, level } = useAuth();
   const { apiRead, apiCrud } = useApi();
@@ -118,6 +120,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
   const [outletFilter, setOutletFilter] = useState("999");
   const [dentistFilter, setDentistFilter] = useState("999");
   const [dentistReportData, setDentistReportData] = useState([]);
+  const [profileData, setProfileData] = useState(null);
 
   const [inputData, setInputData] = useState({ ...inputSchema });
   const [onpageData, setOnpageData] = useState({ ...inputSchema });
@@ -693,6 +696,12 @@ const DashboardSlugPage = ({ parent, slug }) => {
             setDentistReportData([]);
             setTotalPages(0);
           }
+          break;
+        case "PROFILE":
+          addtFormData.append("data", JSON.stringify({ secret }));
+          data = await apiRead(addtFormData, "dentist", "viewdentistdetail");
+          if (data && data.data && data.data.length > 0) setProfileData(data.data[0]);
+          else setProfileData(null);
           break;
         default:
           setTotalPages(0);
@@ -2632,6 +2641,9 @@ const DashboardSlugPage = ({ parent, slug }) => {
                     <TH isSorted onSort={() => handleSort(reservData, setReservData, "name", "text")}>
                       Nama Customer
                     </TH>
+                    <TH isSorted onSort={() => handleSort(reservData, setReservData, "username", "text")}>
+                      Username
+                    </TH>
                     <TH isSorted onSort={() => handleSort(reservData, setReservData, "phone", "number")}>
                       Nomor Telepon
                     </TH>
@@ -2672,6 +2684,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
                       <TD>{data.reservationtime && data.reservationtime}</TD>
                       <TD type="code">{data.rscode && data.rscode}</TD>
                       <TD>{data.name && toTitleCase(data.name)}</TD>
+                      <TD>{data.username && data.username}</TD>
                       <TD type="number" isCopy>
                         {data.phone && data.phone}
                       </TD>
@@ -3683,6 +3696,43 @@ const DashboardSlugPage = ({ parent, slug }) => {
               </Table>
             </DashboardBody>
             {isDReportShown && <Pagination radius="full" nospacing currentPage={currentPage} ttlPages={totalPages} onChange={handlePageChange} />}
+          </Fragment>
+        );
+      case "PROFILE":
+        const InfoSet = ({ infoLabel, infoValue }) => {
+          return (
+            <section className={styles.infoSet}>
+              <b className={styles.infoLabel}>{infoLabel}</b>
+              <b className={styles.infoSeparator}>:</b>
+              <b className={styles.infoValue}>{infoValue}</b>
+            </section>
+          );
+        };
+
+        return (
+          <Fragment>
+            <DashboardHead title={pagetitle} />
+            <section className={styles.userBoard}>
+              <section className={styles.boardBody}>
+                <article className={styles.boardContent}>
+                  <section className={styles.boardProfile} style={width >= 500 ? { flexDirection: "row", alignItems: "flex-start", justifyContent: "flex-start" } : { flexDirection: "column", alignItems: "center", justifyContent: "flex-start" }}>
+                    <header className={styles.profilePic}>
+                      <img className={styles.picIcon} alt={(profileData && profileData.name_dentist) || "Not Set"} src="/jpg/avatar.jpg" loading="lazy" />
+                      <Button id="update-avatar" size="sm" radius="full" buttonText="Update" />
+                    </header>
+                    <section className={styles.profileInfo} style={width >= 500 ? { flex: "1", textAlign: "left" } : { width: "100%", textAlign: "center" }}>
+                      <h1 className={styles.boardTitle}>{(profileData && profileData.name_dentist) || "Unknown"}</h1>
+                      <InfoSet infoLabel="ID" infoValue={(profileData && profileData.id_dentist) || "-"} />
+                      <InfoSet infoLabel="Kode Cabang" infoValue={(profileData && profileData.id_branch) || "-"} />
+                      <InfoSet infoLabel="NIK" infoValue={(profileData && profileData.nik) || "-"} />
+                      <InfoSet infoLabel="Nomor Telepon" infoValue={(profileData && profileData.phone) || "-"} />
+                      <InfoSet infoLabel="Nomor SIP" infoValue={(profileData && profileData.sip) || "-"} />
+                    </section>
+                    <Button id="update-profile" size="sm" radius="full" buttonText="Edit" />
+                  </section>
+                </article>
+              </section>
+            </section>
           </Fragment>
         );
       default:

@@ -383,10 +383,10 @@ const DashboardParamsPage = ({ parent, slug }) => {
                         return item.service === "RESERVATION" ? total - price : total + price;
                       }, 0);
                       setTotalPrice(totalprice);
-                      setInputData({ name: selecteddata.transactionname, phone: selecteddata.transactionphone, id: selecteddata.idtransaction, dentist: selecteddata.dentist, typepayment: selecteddata.payment === "CASH" ? "cash" : "cashless", bank_code: selecteddata.payment === "CASH" ? "CASH" : selecteddata.payment, status: selecteddata.transactionstatus, order: selectedoddata.map((order) => ({ service: order.service, servicetype: order.servicetype, price: order.price })) });
+                      setInputData({ name: selecteddata.transactionname, phone: selecteddata.transactionphone, id: selecteddata.idtransaction, dentist: selecteddata.dentist, note: selecteddata.note, typepayment: selecteddata.payment === "CASH" ? "cash" : "cashless", bank_code: selecteddata.payment === "CASH" ? "CASH" : selecteddata.payment, status: selecteddata.transactionstatus, order: selectedoddata.map((order) => ({ service: order.service, servicetype: order.servicetype, price: order.price })) });
                     } else {
                       setTotalPrice(0);
-                      setInputData({ name: selecteddata.transactionname, phone: selecteddata.transactionphone, id: selecteddata.idtransaction, dentist: selecteddata.dentist, typepayment: selecteddata.payment === "CASH" ? "cash" : "cashless", bank_code: selecteddata.payment === "CASH" ? "CASH" : selecteddata.payment, status: selecteddata.transactionstatus, order: [{ service: "", servicetype: "", price: "" }] });
+                      setInputData({ name: selecteddata.transactionname, phone: selecteddata.transactionphone, id: selecteddata.idtransaction, dentist: selecteddata.dentist, note: selecteddata.note, typepayment: selecteddata.payment === "CASH" ? "cash" : "cashless", bank_code: selecteddata.payment === "CASH" ? "CASH" : selecteddata.payment, status: selecteddata.transactionstatus, order: [{ service: "", servicetype: "", price: "" }] });
                     }
                     setSelectedMode("update");
                   } else {
