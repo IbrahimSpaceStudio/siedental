@@ -101,6 +101,7 @@ export const inputSchema = {
   nik: "",
   client_id: "",
   secret_id: "",
+  pks: "",
 };
 
 export const errorSchema = {
@@ -206,4 +207,5 @@ export const errorSchema = {
   nik: "",
   client_id: "",
   secret_id: "",
+  pks: "",
 };
