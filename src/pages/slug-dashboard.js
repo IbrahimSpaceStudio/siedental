@@ -3749,6 +3749,11 @@ const DashboardSlugPage = ({ parent, slug }) => {
                       <InfoSet infoLabel="NIK" infoValue={(profileData && profileData.nik) || "-"} />
                       <InfoSet infoLabel="Nomor Telepon" infoValue={(profileData && profileData.phone) || "-"} />
                       <InfoSet infoLabel="Nomor SIP" infoValue={(profileData && profileData.sip) || "-"} />
+                      <section className={styles.infoSet}>
+                        <b className={styles.infoLabel}>Dokumen PKS</b>
+                        <b className={styles.infoSeparator}>:</b>
+                        <Button id="view-pks" type="link" size="sm" radius="full" color="var(--color-primary)" bgColor="var(--color-primary-10)" buttonText="Lihat PKS" href={profileData && profileData.pks} isNewTab />
+                      </section>
                     </section>
                     <Button id="update-profile" size="sm" radius="full" buttonText="Edit" />
                   </section>
