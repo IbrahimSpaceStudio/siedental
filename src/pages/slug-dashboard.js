@@ -703,6 +703,24 @@ const DashboardSlugPage = ({ parent, slug }) => {
           if (data && data.data && data.data.length > 0) setProfileData(data.data[0]);
           else setProfileData(null);
           break;
+        case "CALENDAR":
+          addtFormData.append("data", JSON.stringify({ secret }));
+          addtdata = await apiRead(addtFormData, "dentist", "calendardentist");
+          if (addtdata && addtdata.data && addtdata.data.length > 0) {
+            const eventsdata = addtdata.data;
+            const mutatedevents = eventsdata.reduce((acc, event) => {
+              const date = event.reservationdate;
+              const time = event.reservationtime;
+              const status = event.status_reservation;
+              const label = `${event.reservationtime} | ${event.rscode} - ${toTitleCase(event.name)}`;
+              if (!acc[date]) acc[date] = [];
+              acc[date].push({ ...event, label, time, status });
+              acc[date].sort((a, b) => a.time.localeCompare(b.time));
+              return acc;
+            }, {});
+            setEventsData(mutatedevents);
+          } else setEventsData([]);
+          break;
         default:
           setTotalPages(0);
           break;
@@ -940,8 +958,8 @@ const DashboardSlugPage = ({ parent, slug }) => {
       case "RESERVATION":
         if (selectedMode === "update") requiredFields = [];
         else {
-          if (inputData.service === "RESERVATION") requiredFields = ["name", "phone", "email", "service", "sub_service", "date", "time", "price", "bank_code"];
-          else requiredFields = ["name", "phone", "email", "service", "sub_service", "date", "time"];
+          if (inputData.service === "RESERVATION") requiredFields = ["name", "phone", "email", "service", "sub_service", "dentist", "date", "time", "price", "bank_code"];
+          else requiredFields = ["name", "phone", "email", "service", "sub_service", "dentist", "date", "time"];
         }
         break;
       case "ORDER CUSTOMER":
@@ -1022,7 +1040,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
           break;
         case "RESERVATION":
           if (selectedMode === "update") submittedData = { secret, status_reservation: inputData.status, status_dp: inputData.statuspayment };
-          else submittedData = { secret, idservicetype: inputData.id, name: inputData.name, phone: inputData.phone, email: inputData.email, voucher: inputData.vouchercode, service: inputData.service, typeservice: inputData.sub_service, reservationdate: inputData.date, reservationtime: inputData.time, price: inputData.price, bank_code: inputData.bank_code, note: inputData.note, idoutlet: selectedBranch };
+          else submittedData = { secret, idservicetype: inputData.id, iddentis: inputData.dentist, name: inputData.name, phone: inputData.phone, email: inputData.email, voucher: inputData.vouchercode, service: inputData.service, typeservice: inputData.sub_service, reservationdate: inputData.date, reservationtime: inputData.time, price: inputData.price, bank_code: inputData.bank_code, note: inputData.note, idoutlet: selectedBranch };
           break;
         case "ORDER CUSTOMER":
           submittedData = { secret, name: inputData.name, phone: inputData.phone, bank_code: inputData.bank_code, dentist: inputData.dentist, note: inputData.note, transactionstatus: inputData.status, layanan: inputData.order };
@@ -1129,6 +1147,71 @@ const DashboardSlugPage = ({ parent, slug }) => {
   const { searchTerm: dReportSearch, handleSearch: handleDReportSearch, filteredData: filteredDReportData, isDataShown: isDReportShown } = useSearch(dentistReportData, ["service"]);
 
   const renderContent = () => {
+    const daysofweek = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
+    const getDaysMonth = (year, month) => {
+      return new Date(year, month + 1, 0).getDate();
+    };
+    const getFirstDayMonth = (year, month) => {
+      return new Date(year, month, 1).getDay();
+    };
+    const formatDate = (year, month, day) => {
+      return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    };
+
+    const generateCalendar = () => {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const daysmonth = getDaysMonth(year, month);
+      const firstdaymonth = getFirstDayMonth(year, month);
+      const daysprevmonth = getDaysMonth(year, month - 1);
+      const calendardays = [];
+      let dayCounter = 1;
+
+      for (let i = firstdaymonth - 1; i >= 0; i--) {
+        const day = daysprevmonth - i;
+        const date = formatDate(year, month - 1, day);
+        calendardays.push({ day, events: eventsData[date] || [], isCurrentMonth: false, date });
+      }
+      while (dayCounter <= daysmonth) {
+        const date = formatDate(year, month, dayCounter);
+        calendardays.push({ day: dayCounter, events: eventsData[date] || [], isCurrentMonth: true, date });
+        dayCounter++;
+      }
+      const anotherdaysmonth = 42 - calendardays.length;
+      for (let i = 1; i <= anotherdaysmonth; i++) {
+        const date = formatDate(year, month + 1, i);
+        calendardays.push({ day: i, events: eventsData[date] || [], isCurrentMonth: false, date });
+      }
+
+      const openEvent = (dayObj) => {
+        if (dayObj) {
+          setSelectedDayEvents(dayObj.events);
+          setIsModalOpen(true);
+        }
+      };
+
+      return calendardays.map((dayObj, index) => (
+        <CalendarDate key={index} date={dayObj.day} isDisabled={!dayObj.isCurrentMonth} hasEvent={dayObj.events.length > 0} onClick={() => openEvent(dayObj)}>
+          {dayObj.events.slice(0, 3).map((event, i) => (
+            <DateEvent key={i} label={event.label} status={event.status} isDisabled={!dayObj.isCurrentMonth} />
+          ))}
+          {dayObj.events.length > 3 && <DateEvent label={`+${dayObj.events.length - 3} more events`} />}
+        </CalendarDate>
+      ));
+    };
+
+    const handlePrevMonth = () => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
+    const handleNextMonth = () => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
+    const handleToday = () => {
+      const todayWIB = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
+      setCurrentDate(new Date(todayWIB));
+    };
+
+    const closeEvent = () => {
+      setIsModalOpen(false);
+      setSelectedDayEvents([]);
+    };
+
     switch (slug) {
       case "DATA CUSTOMER":
         return (
@@ -1589,14 +1672,17 @@ const DashboardSlugPage = ({ parent, slug }) => {
             {isDentistShown && <Pagination radius="full" nospacing currentPage={currentPage} ttlPages={totalPages} onChange={handlePageChange} />}
             {isFormOpen && (
               <SubmitForm size="md" formTitle={selectedMode === "update" ? "Perbarui Data Dokter" : "Tambah Data Dokter"} operation={selectedMode} fetching={isFormFetching} onSubmit={(e) => handleSubmit(e, "cuddentist")} loading={isSubmitting} onClose={closeForm}>
-                <Select id={`${pageid}-outlet-code`} searchable radius="full" label="Cabang" placeholder="Pilih cabang" name="cctr" value={inputData.cctr} options={allBranchData.map((branch) => ({ value: branch.cctr, label: branch.outlet_name.replace("E DENTAL - DOKTER GIGI", "CABANG") }))} onChange={(selectedValue) => handleInputChange({ target: { name: "cctr", value: selectedValue } })} errormsg={errors.cctr} required />
                 <Fieldset>
+                  <Select id={`${pageid}-outlet-code`} searchable radius="full" label="Cabang" placeholder="Pilih cabang" name="cctr" value={inputData.cctr} options={allBranchData.map((branch) => ({ value: branch.cctr, label: branch.outlet_name.replace("E DENTAL - DOKTER GIGI", "CABANG") }))} onChange={(selectedValue) => handleInputChange({ target: { name: "cctr", value: selectedValue } })} errormsg={errors.cctr} required />
                   <Input id={`${pageid}-name`} radius="full" label="Nama Dokter" placeholder="Masukkan nama Dokter" type="text" name="name" value={inputData.name} onChange={handleInputChange} errormsg={errors.name} required />
-                  <Input id={`${pageid}-sip`} radius="full" label="Nomor SIP" placeholder="Masukkan nomor SIP" type="number" name="sip" value={inputData.sip} onChange={handleInputChange} errormsg={errors.sip} required />
                 </Fieldset>
                 <Fieldset>
                   <Input id={`${pageid}-phone`} radius="full" label="Nomor Telepon" placeholder="0882xxx" type="tel" name="phone" value={inputData.phone} onChange={handleInputChange} errormsg={errors.phone} required />
                   <Input id={`${pageid}-nik`} radius="full" label="NIK" placeholder="327xxx" type="number" name="nik" value={inputData.nik} onChange={handleInputChange} errormsg={errors.nik} required />
+                </Fieldset>
+                <Fieldset>
+                  <Input id={`${pageid}-sip`} radius="full" label="Nomor SIP" placeholder="Masukkan nomor SIP" type="number" name="sip" value={inputData.sip} onChange={handleInputChange} errormsg={errors.sip} required />
+                  <Input id={`${pageid}-pks`} type="file" accept="application/pdf" radius="full" label="Upload PKS" name="pks" initial={inputData.pks} onChange={handleImageSelect} />
                 </Fieldset>
               </SubmitForm>
             )}
@@ -2704,7 +2790,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
             </DashboardBody>
             {searchTerm === "" && <Pagination radius="full" nospacing currentPage={currentPage} ttlPages={totalPages} onChange={handlePageChange} />}
             {isFormOpen && (
-              <SubmitForm size={selectedMode === "update" ? "sm" : "lg"} formTitle={selectedMode === "update" ? "Ubah Status Reservasi" : "Tambah Data Reservasi"} operation={selectedMode} fetching={isFormFetching} onSubmit={(e) => handleSubmit(e, "cudreservation")} loading={isSubmitting} onClose={closeForm}>
+              <SubmitForm size={selectedMode === "update" ? "sm" : "lg"} formTitle={selectedMode === "update" ? "Ubah Status Reservasi" : "Tambah Data Reservasi"} operation={selectedMode} fetching={isFormFetching} onSubmit={(e) => handleSubmit(e, "cudreservation2")} loading={isSubmitting} onClose={closeForm}>
                 {selectedMode === "update" ? (
                   <Fieldset>
                     <Select id={`${pageid}-reserv-status`} noemptyval radius="full" label="Status Reservasi" placeholder="Set status" name="status" value={inputData.status} options={reservstatopt} onChange={(selectedValue) => handleInputChange({ target: { name: "status", value: selectedValue } })} />
@@ -2723,6 +2809,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
                       <Input id={`${pageid}-voucher`} radius="full" label="Kode Voucher" placeholder="e.g 598RE3" type="text" name="vouchercode" value={inputData.vouchercode} onChange={handleInputChange} errormsg={errors.vouchercode} />
                     </Fieldset>
                     <Fieldset>
+                      <Select id={`${pageid}-dentist`} searchable radius="full" label="Dokter" placeholder="Pilih dokter" name="dentist" value={inputData.dentist} options={branchDentistData.map((dentist) => ({ value: dentist.id_dentist, label: dentist.name_dentist.replace(`${dentist.id_branch} -`, "") }))} onChange={(selectedValue) => handleInputChange({ target: { name: "dentist", value: selectedValue } })} errormsg={errors.dentist} required />
                       <Input id={`${pageid}-date`} radius="full" label="Tanggal Reservasi" placeholder="Atur tanggal" type="date" name="date" min={getCurrentDate()} value={inputData.date} onChange={handleInputChange} errormsg={errors.date} required />
                       <Select id={`${pageid}-time`} searchable radius="full" label="Jam Reservasi" placeholder={inputData.date ? "Pilih jadwal tersedia" : "Mohon pilih tanggal dahulu"} name="time" value={inputData.time} options={availHoursData.map((hour) => ({ value: hour, label: hour }))} onChange={(selectedValue) => handleInputChange({ target: { name: "time", value: selectedValue } })} errormsg={errors.time} required disabled={!inputData.date} />
                     </Fieldset>
@@ -2915,71 +3002,6 @@ const DashboardSlugPage = ({ parent, slug }) => {
           </Fragment>
         );
       case "CALENDAR RESERVATION":
-        const daysofweek = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
-        const getDaysMonth = (year, month) => {
-          return new Date(year, month + 1, 0).getDate();
-        };
-        const getFirstDayMonth = (year, month) => {
-          return new Date(year, month, 1).getDay();
-        };
-        const formatDate = (year, month, day) => {
-          return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        };
-
-        const generateCalendar = () => {
-          const year = currentDate.getFullYear();
-          const month = currentDate.getMonth();
-          const daysmonth = getDaysMonth(year, month);
-          const firstdaymonth = getFirstDayMonth(year, month);
-          const daysprevmonth = getDaysMonth(year, month - 1);
-          const calendardays = [];
-          let dayCounter = 1;
-
-          for (let i = firstdaymonth - 1; i >= 0; i--) {
-            const day = daysprevmonth - i;
-            const date = formatDate(year, month - 1, day);
-            calendardays.push({ day, events: eventsData[date] || [], isCurrentMonth: false, date });
-          }
-          while (dayCounter <= daysmonth) {
-            const date = formatDate(year, month, dayCounter);
-            calendardays.push({ day: dayCounter, events: eventsData[date] || [], isCurrentMonth: true, date });
-            dayCounter++;
-          }
-          const anotherdaysmonth = 42 - calendardays.length;
-          for (let i = 1; i <= anotherdaysmonth; i++) {
-            const date = formatDate(year, month + 1, i);
-            calendardays.push({ day: i, events: eventsData[date] || [], isCurrentMonth: false, date });
-          }
-
-          const openEvent = (dayObj) => {
-            if (dayObj) {
-              setSelectedDayEvents(dayObj.events);
-              setIsModalOpen(true);
-            }
-          };
-
-          return calendardays.map((dayObj, index) => (
-            <CalendarDate key={index} date={dayObj.day} isDisabled={!dayObj.isCurrentMonth} hasEvent={dayObj.events.length > 0} onClick={() => openEvent(dayObj)}>
-              {dayObj.events.slice(0, 3).map((event, i) => (
-                <DateEvent key={i} label={event.label} status={event.status} isDisabled={!dayObj.isCurrentMonth} />
-              ))}
-              {dayObj.events.length > 3 && <DateEvent label={`+${dayObj.events.length - 3} more events`} />}
-            </CalendarDate>
-          ));
-        };
-
-        const handlePrevMonth = () => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
-        const handleNextMonth = () => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
-        const handleToday = () => {
-          const todayWIB = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
-          setCurrentDate(new Date(todayWIB));
-        };
-
-        const closeEvent = () => {
-          setIsModalOpen(false);
-          setSelectedDayEvents([]);
-        };
-
         return (
           <Fragment>
             <DashboardHead title={`Jadwal Reservasi ${currentDate.toLocaleString("default", { month: "long" })} ${currentDate.getFullYear()}`} desc="Data visual jadwal reservasi, klik kolom tanggal untuk melihat daftar jadwal reservasi harian." />
@@ -3733,6 +3755,29 @@ const DashboardSlugPage = ({ parent, slug }) => {
                 </article>
               </section>
             </section>
+          </Fragment>
+        );
+      case "CALENDAR":
+        return (
+          <Fragment>
+            <DashboardHead title={`Jadwal Reservasi ${currentDate.toLocaleString("default", { month: "long" })} ${currentDate.getFullYear()}`} desc="Data visual jadwal reservasi, klik kolom tanggal untuk melihat daftar jadwal reservasi harian." />
+            <DashboardToolbar>
+              <DashboardTool>{level === "admin" && <Select id={`${pageid}-outlet`} labeled={false} searchable radius="full" placeholder="Pilih Cabang" value={selectedBranch} options={allBranchData.map((branch) => ({ value: branch.idoutlet, label: branch.outlet_name.replace("E DENTAL - DOKTER GIGI", "CABANG") }))} onChange={handleBranchChange} />}</DashboardTool>
+              <DashboardTool>
+                <Button id={`${pageid}-today`} radius="full" buttonText="Hari Ini" onClick={handleToday} />
+                <Button id={`${pageid}-prev-month`} radius="full" variant="line" color="var(--color-primary)" buttonText="Prev Month" onClick={handlePrevMonth} startContent={<HChevron direction="left" />} />
+                <Button id={`${pageid}-next-month`} radius="full" buttonText="Next Month" onClick={handleNextMonth} endContent={<HChevron />} />
+              </DashboardTool>
+            </DashboardToolbar>
+            <DashboardBody>
+              <Calendar>
+                {daysofweek.map((day) => (
+                  <CalendarDay key={day}>{day}</CalendarDay>
+                ))}
+                {generateCalendar()}
+              </Calendar>
+            </DashboardBody>
+            {isModalOpen && <EventModal events={selectedDayEvents} onClose={closeEvent} />}
           </Fragment>
         );
       default:
