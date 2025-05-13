@@ -3,11 +3,11 @@ name: EDENTAL v1.0.0
 on:
   push:
     branches:
-      - main
+      - staging
 
 jobs:
   web-deploy:
-    name: Deploy on main
+    name: Deploy on staging
     runs-on: ubuntu-latest
 
     steps:
