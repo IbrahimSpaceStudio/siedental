@@ -958,8 +958,8 @@ const DashboardSlugPage = ({ parent, slug }) => {
       case "RESERVATION":
         if (selectedMode === "update") requiredFields = [];
         else {
-          if (inputData.service === "RESERVATION") requiredFields = ["name", "phone", "email", "service", "sub_service", "dentist", "date", "time", "price", "bank_code"];
-          else requiredFields = ["name", "phone", "email", "service", "sub_service", "dentist", "date", "time"];
+          if (inputData.service === "RESERVATION") requiredFields = ["name", "phone", "email", "service", "sub_service", "date", "time", "price", "bank_code"];
+          else requiredFields = ["name", "phone", "email", "service", "sub_service", "date", "time"];
         }
         break;
       case "ORDER CUSTOMER":
@@ -2809,7 +2809,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
                       <Input id={`${pageid}-voucher`} radius="full" label="Kode Voucher" placeholder="e.g 598RE3" type="text" name="vouchercode" value={inputData.vouchercode} onChange={handleInputChange} errormsg={errors.vouchercode} />
                     </Fieldset>
                     <Fieldset>
-                      <Select id={`${pageid}-dentist`} searchable radius="full" label="Dokter" placeholder="Pilih dokter" name="dentist" value={inputData.dentist} options={branchDentistData.map((dentist) => ({ value: dentist.id_dentist, label: dentist.name_dentist.replace(`${dentist.id_branch} -`, "") }))} onChange={(selectedValue) => handleInputChange({ target: { name: "dentist", value: selectedValue } })} errormsg={errors.dentist} required />
+                      <Select id={`${pageid}-dentist`} searchable radius="full" label="Dokter" placeholder="Pilih dokter" name="dentist" value={inputData.dentist} options={branchDentistData.map((dentist) => ({ value: dentist.id_dentist, label: dentist.name_dentist.replace(`${dentist.id_branch} -`, "") }))} onChange={(selectedValue) => handleInputChange({ target: { name: "dentist", value: selectedValue } })} errormsg={errors.dentist} />
                       <Input id={`${pageid}-date`} radius="full" label="Tanggal Reservasi" placeholder="Atur tanggal" type="date" name="date" min={getCurrentDate()} value={inputData.date} onChange={handleInputChange} errormsg={errors.date} required />
                       <Select id={`${pageid}-time`} searchable radius="full" label="Jam Reservasi" placeholder={inputData.date ? "Pilih jadwal tersedia" : "Mohon pilih tanggal dahulu"} name="time" value={inputData.time} options={availHoursData.map((hour) => ({ value: hour, label: hour }))} onChange={(selectedValue) => handleInputChange({ target: { name: "time", value: selectedValue } })} errormsg={errors.time} required disabled={!inputData.date} />
                     </Fieldset>
