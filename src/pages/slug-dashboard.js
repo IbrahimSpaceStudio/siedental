@@ -37,7 +37,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
   const { width } = useWindow();
   const { toTitleCase, toPathname } = useContent();
   const { isLoggedin, secret, cctr, idoutlet, level } = useAuth();
-  const { apiRead, apiCrud } = useApi();
+  const { apiRead, apiCrud, apiGet } = useApi();
   const { showNotifications } = useNotifications();
   const { limitopt, genderopt, levelopt, usrstatopt, unitopt, houropt, postatopt, pocstatopt, reservstatopt, paymentstatopt, paymenttypeopt, orderstatopt, reportstatopt } = useOptions();
   const { paymentAlias, orderAlias, poAlias, usrstatAlias, reservAlias } = useAlias();
@@ -82,6 +82,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
   const [selectedBranch, setSelectedBranch] = useState(idoutlet);
   const [selectedDentist, setSelectedDentist] = useState(null);
   const [allDentistData, setAllDentistData] = useState([]);
+  const [allOutletAllDentistData, setAllOutletAllDentistData] = useState([]);
   const [dentistData, setDentistData] = useState([]);
   const [branchDentistData, setBranchDentistData] = useState([]);
   const [stockData, setStockData] = useState([]);
@@ -592,14 +593,11 @@ const DashboardSlugPage = ({ parent, slug }) => {
           }
           break;
         case "RESERVATION":
+          addtdata = await apiGet("dentist", "alldentist");
+          setAllOutletAllDentistData(addtdata?.data?.length > 0 ? addtdata.data : []);
           data = await apiRead(formData, "office", "viewreservation");
-          if (data && data.data && data.data.length > 0) {
-            setReservData(data.data);
-            setTotalPages(data.TTLPage);
-          } else {
-            setReservData([]);
-            setTotalPages(0);
-          }
+          setReservData(data?.data?.length > 0 ? data.data : []);
+          setTotalPages(data?.data?.length > 0 ? data.TTLPage : 0);
           break;
         case "ORDER CUSTOMER":
           data = await apiRead(formData, "office", "vieworder2");
@@ -2809,7 +2807,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
                       <Input id={`${pageid}-voucher`} radius="full" label="Kode Voucher" placeholder="e.g 598RE3" type="text" name="vouchercode" value={inputData.vouchercode} onChange={handleInputChange} errormsg={errors.vouchercode} />
                     </Fieldset>
                     <Fieldset>
-                      <Select id={`${pageid}-dentist`} searchable radius="full" label="Dokter" placeholder="Pilih dokter" name="dentist" value={inputData.dentist} options={branchDentistData.map((dentist) => ({ value: dentist.id_dentist, label: dentist.name_dentist.replace(`${dentist.id_branch} -`, "") }))} onChange={(selectedValue) => handleInputChange({ target: { name: "dentist", value: selectedValue } })} errormsg={errors.dentist} />
+                      <Select id={`${pageid}-dentist`} searchable radius="full" label="Dokter" placeholder="Pilih dokter" name="dentist" value={inputData.dentist} options={(level === "admin" ? allOutletAllDentistData : branchDentistData).map((dentist) => ({ value: dentist.id_dentist, label: dentist.name_dentist.replace(`${dentist.id_branch} -`, "") }))} onChange={(selectedValue) => handleInputChange({ target: { name: "dentist", value: selectedValue } })} errormsg={errors.dentist} />
                       <Input id={`${pageid}-date`} radius="full" label="Tanggal Reservasi" placeholder="Atur tanggal" type="date" name="date" min={getCurrentDate()} value={inputData.date} onChange={handleInputChange} errormsg={errors.date} required />
                       <Select id={`${pageid}-time`} searchable radius="full" label="Jam Reservasi" placeholder={inputData.date ? "Pilih jadwal tersedia" : "Mohon pilih tanggal dahulu"} name="time" value={inputData.time} options={availHoursData.map((hour) => ({ value: hour, label: hour }))} onChange={(selectedValue) => handleInputChange({ target: { name: "time", value: selectedValue } })} errormsg={errors.time} required disabled={!inputData.date} />
                     </Fieldset>
