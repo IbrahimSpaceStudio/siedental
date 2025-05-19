@@ -433,88 +433,51 @@ const DashboardSlugPage = ({ parent, slug }) => {
       switch (slug) {
         case "DATA CUSTOMER":
           data = await apiRead(formData, "office", "viewcustomer");
-          if (data && data.data && data.data.length > 0) {
-            setCustData(data.data);
-            setTotalPages(data.TTLPage);
-          } else {
-            setCustData([]);
-            setTotalPages(0);
-          }
+          setCustData(data?.data?.length > 0 ? data.data : []);
+          setTotalPages(data?.data?.length > 0 ? data.TTLPage : 0);
           break;
         case "MANAJEMEN USER":
           data = await apiRead(formData, "office", "viewuser");
-          if (data && data.data && data.data.length > 0) {
-            setUserData(data.data);
-            setTotalPages(data.TTLPage);
-          } else {
-            setUserData([]);
-            setTotalPages(0);
-          }
+          setUserData(data?.data?.length > 0 ? data.data : []);
+          setTotalPages(data?.data?.length > 0 ? data.TTLPage : 0);
           break;
         case "LAYANAN":
           data = await apiRead(formData, "office", "viewservice");
-          if (data && data.data && data.data.length > 0) {
-            setservicedata(data.data);
-            setTotalPages(data.TTLPage);
-          } else {
-            setservicedata([]);
-            setTotalPages(0);
-          }
+          setservicedata(data?.data?.length > 0 ? data.data : []);
+          setTotalPages(data?.data?.length > 0 ? data.TTLPage : 0);
           break;
         case "CABANG EDENTAL":
           data = await apiRead(formData, "office", "viewoutlet");
-          if (data && data.data && data.data.length > 0) {
-            setBranchData(data.data);
-            setTotalPages(data.TTLPage);
-          } else {
-            setBranchData([]);
-            setTotalPages(0);
-          }
+          setBranchData(data?.data?.length > 0 ? data.data : []);
+          setTotalPages(data?.data?.length > 0 ? data.TTLPage : 0);
           break;
         case "DIAGNOSA":
           addtFormData.append("data", JSON.stringify({ secret }));
           data = await apiRead(addtFormData, "office", "viewdiagnosis");
-          if (data && data.data && data.data.length > 0) setDiagnoseData(data.data);
-          else setDiagnoseData([]);
+          setDiagnoseData(data?.data?.length > 0 ? data.data : []);
           break;
         case "KONDISI GIGI":
           addtFormData.append("data", JSON.stringify({ secret }));
           data = await apiRead(addtFormData, "office", "viewtooth");
-          if (data && data.data && data.data.length > 0) setConditionData(data.data);
-          else setConditionData([]);
+          setConditionData(data?.data?.length > 0 ? data.data : []);
           break;
         case "DENTIST":
           data = await apiRead(formData, "office", "viewdentist");
-          if (data && data.data && data.data.length > 0) {
-            setDentistData(data.data);
-            setTotalPages(data.TTLPage);
-          } else {
-            setDentistData([]);
-            setTotalPages(0);
-          }
+          setDentistData(data?.data?.length > 0 ? data.data : []);
+          setTotalPages(data?.data?.length > 0 ? data.TTLPage : 0);
           break;
         case "ORDER REPORT":
           addtFormData.append("data", JSON.stringify({ secret, idoutlet: outletFilter, status: selectedStatus, stardate: formatISODate(startDate), enddate: formatISODate(endDate), dentist: dentistFilter }));
           addtFormData.append("limit", limit);
           addtFormData.append("hal", offset);
           addtdata = await apiRead(addtFormData, "office", "vieworderreport");
-          if (addtdata && addtdata.data && addtdata.data.length > 0) {
-            setOrderRData(addtdata.data);
-            setTotalPages(outletFilter === "999" || dentistFilter === "999" ? addtdata.TTLPage : null);
-          } else {
-            setOrderRData([]);
-            setTotalPages(0);
-          }
+          setOrderRData(addtdata?.data?.length > 0 ? addtdata.data : []);
+          setTotalPages(addtdata?.data?.length > 0 ? (outletFilter === "999" || dentistFilter === "999" ? addtdata.TTLPage : null) : 0);
           break;
         case "STOCK OUT":
           data = await apiRead(formData, "office", "viewstockout");
-          if (data && data.data && data.data.length > 0) {
-            setStockOutData(data.data);
-            setTotalPages(data.TTLPage);
-          } else {
-            setStockOutData([]);
-            setTotalPages(0);
-          }
+          setStockOutData(data?.data?.length > 0 ? data.data : []);
+          setTotalPages(data?.data?.length > 0 ? data.TTLPage : 0);
           break;
         case "STOCK EXPIRE":
           data = await apiRead(formData, "office", "viewstockexpire");
@@ -674,7 +637,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
           data = await apiRead(addtFormData, "dentist", "orderdentist");
           if (data && data.data && data.data.length > 0) {
             addtdata = data.data;
-            const mergeddata = addtdata.flatMap(({ lab, detailorder }) => detailorder.map((order, index) => ({ ...order, ...(index === 0 ? lab : Object.fromEntries(Object.keys(lab).map((key) => [key, ""]))) })));
+            const mergeddata = addtdata.flatMap(({ lab, detailorder }) => detailorder.map((order, index) => ({ ...order, ...(index === 0 ? lab[0] : Object.fromEntries(Object.keys(lab[0]).map((key) => [key, ""]))) })));
             setDentistReportData(mergeddata);
             setTotalPages(data.TTLPage);
           } else {
@@ -687,7 +650,7 @@ const DashboardSlugPage = ({ parent, slug }) => {
           data = await apiRead(addtFormData, "dentist", "orderdentist");
           if (data && data.data && data.data.length > 0) {
             addtdata = data.data;
-            const mergeddata = addtdata.flatMap(({ lab, detailorder }) => detailorder.map((order, index) => ({ ...order, ...(index === 0 ? lab : Object.fromEntries(Object.keys(lab).map((key) => [key, ""]))) })));
+            const mergeddata = addtdata.flatMap(({ lab, detailorder }) => detailorder.map((order, index) => ({ ...order, ...(index === 0 ? lab[0] : Object.fromEntries(Object.keys(lab[0]).map((key) => [key, ""]))) })));
             setDentistReportData(mergeddata);
             setTotalPages(data.TTLPage);
           } else {
